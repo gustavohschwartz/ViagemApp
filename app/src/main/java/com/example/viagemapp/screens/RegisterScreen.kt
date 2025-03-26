@@ -18,13 +18,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.viagemapp.components.ErrorDialog
 import com.example.viagemapp.components.TextField
 import com.example.viagemapp.components.PasswordField
 import com.example.viagemapp.ui.theme.ViagemAppTheme
 
 @Composable
-fun RegisterScreen() {
+fun RegisterScreen(navController: NavController)
+ {
     val registerUserViewModel: RegisterUserViewModel = viewModel()
 
     Scaffold {
@@ -95,6 +97,9 @@ fun RegisterScreen() {
             Text(text = "Register user")
         }
 
+
+
+
         if (registerUser.value.errorMessage.isNotBlank()) {
             ErrorDialog(
                 error = registerUser.value.errorMessage,
@@ -106,10 +111,3 @@ fun RegisterScreen() {
     }
 
 
-@Composable
-@Preview(showSystemUi = true, showBackground = true, device = "id:Galaxy Nexus")
-fun RegisterUserPreview() {
-    ViagemAppTheme{
-        RegisterScreen()
-    }
-}
