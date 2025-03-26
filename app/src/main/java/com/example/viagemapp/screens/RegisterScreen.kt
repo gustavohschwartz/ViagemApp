@@ -25,8 +25,7 @@ import com.example.viagemapp.components.PasswordField
 import com.example.viagemapp.ui.theme.ViagemAppTheme
 
 @Composable
-fun RegisterScreen(navController: NavController)
- {
+fun RegisterScreen(navController: NavController) {
     val registerUserViewModel: RegisterUserViewModel = viewModel()
 
     Scaffold {
@@ -36,15 +35,15 @@ fun RegisterScreen(navController: NavController)
                 .padding(16.dp)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
-
         ) {
-            RegisterUserFields(registerUserViewModel)
+            RegisterUserFields(registerUserViewModel, navController) // Adicionado navController
         }
     }
 }
+
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun RegisterUserFields(registerUserViewModel: RegisterUserViewModel) {
+    fun RegisterUserFields(registerUserViewModel: RegisterUserViewModel, navController: NavController) {
         var registerUser = registerUserViewModel.uiState.collectAsState()
         val ctx = LocalContext.current
 
@@ -94,8 +93,18 @@ fun RegisterScreen(navController: NavController)
                 }
             }
         ) {
-            Text(text = "Register user")
+            Text(text = "Cadastrar Usuário")
         }
+
+        Button(
+            modifier = Modifier.padding(top = 16.dp),
+            onClick = {
+                navController.navigate("login")
+            }
+        ) {
+            Text(text = "Voltar")
+        }
+
 
 
 
