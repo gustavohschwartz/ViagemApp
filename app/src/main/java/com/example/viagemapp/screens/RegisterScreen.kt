@@ -48,7 +48,7 @@ fun RegisterScreen(navController: NavController) {
         val ctx = LocalContext.current
 
         TextField(
-            label = "User",
+            label = "Usuário",
             value = registerUser.value.user,
             onValueChange = {
                 registerUserViewModel.onUserChange(it)
@@ -56,7 +56,7 @@ fun RegisterScreen(navController: NavController) {
         )
 
         TextField(
-            label = "Name",
+            label = "Nome Completo",
             value = registerUser.value.name ,
             onValueChange = {
                 registerUserViewModel.onNameChange(it)
@@ -70,14 +70,14 @@ fun RegisterScreen(navController: NavController) {
             }
         )
         PasswordField(
-            label = "Password",
+            label = "Senha",
             value = registerUser.value.password,
             errorMessage = registerUser.value.validatePassord(),
             onValueChange = {
                 registerUserViewModel.onPasswordChange(it)
             })
         PasswordField(
-            label = "Confirm password",
+            label = "Confirmar Senha",
             value = registerUser.value.confirmPassword,
             errorMessage = registerUser.value.validateConfirmPassword() ,
             onValueChange = {
@@ -88,7 +88,7 @@ fun RegisterScreen(navController: NavController) {
             modifier = Modifier.padding(top = 16.dp),
             onClick = {
                 if (registerUserViewModel.register()) {
-                    Toast.makeText(ctx, "User registered",
+                    Toast.makeText(ctx, "Usuário Cadastrado",
                         Toast.LENGTH_SHORT).show()
                 }
             }

@@ -89,7 +89,7 @@ fun LoginScreen(navController: NavController) {
 
         // Link para Registro
         TextButton(onClick = { navController.navigate("register") }) {
-            Text("Registrar um novo usuário")
+            Text("Criar conta")
         }
     }
 }
