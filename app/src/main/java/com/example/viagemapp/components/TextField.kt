@@ -41,7 +41,7 @@ fun TextField(
         isError = isTouched.value && value.isBlank(),
         supportingText = {
             if (isTouched.value && value.isBlank()) {
-                Text(text = "Field ${label} is required")
+                Text(text = "Campo ${label} é obrigatório.")
             }
         }
     )

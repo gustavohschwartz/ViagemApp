@@ -15,27 +15,27 @@ data class RegisterUser(
 ) {
     fun validatePassord(): String {
         if (password.isBlank()) {
-            return "Password is required"
+            return "Campo senha é obrigatório."
         }
         return ""
     }
 
     fun validateConfirmPassword(): String {
         if (confirmPassword != password) {
-            return "The confirm password is different"
+            return "As senhas não conferem."
         }
         return ""
     }
 
     fun validateAllField() {
         if (user.isBlank()) {
-            throw Exception("User is required")
+            throw Exception("Campo obrigatório")
         }
         if (name.isBlank()){
-            throw Exception ("Name is required")
+            throw Exception ("Campo obrigatório")
         }
         if (email.isBlank()) {
-            throw Exception("Email is required")
+            throw Exception("Campo obrigatório")
         }
         if (validatePassord().isNotBlank()) {
             throw Exception(validatePassord())
