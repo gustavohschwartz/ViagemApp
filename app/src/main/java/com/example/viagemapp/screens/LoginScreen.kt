@@ -15,7 +15,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.viagemapp.R
 
 @Composable
@@ -94,4 +98,22 @@ fun LoginScreen(navController: NavController) {
     }
 }
 
+@Composable
+fun MenuScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = "Bem-vindo ao Menu!", fontSize = 24.sp)
+    }
+}
 
+@Composable
+fun AppNavigation() {
+    val navController = rememberNavController()
+    NavHost(navController, startDestination = "login") {
+        composable("login") { LoginScreen(navController) }
+        composable("menu") { MenuScreen() }
+        composable("register") { /* Navegar para a tela de registro */ }
+    }
+}
