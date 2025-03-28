@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.viagemapp.screens.AddTripScreen
 import com.example.viagemapp.screens.LoginScreen
 import com.example.viagemapp.screens.MenuScreen
 import com.example.viagemapp.screens.RegisterScreen
@@ -51,6 +52,9 @@ class MainActivity : ComponentActivity() {
             }
             composable(route = "menu") {
                 MenuScreen(navController = navController)
+            }
+            composable(route = "add_trip") {
+                AddTripScreen(navController = navController)
             }
         }
     }
