@@ -38,7 +38,7 @@ fun LoginScreen(navController: NavController) {
     ) {
         // Logotipo
         Image(
-            painter = painterResource(id = R.drawable.logo),
+            painter = painterResource(id = R.drawable.newlogo),
             contentDescription = "Logotipo",
             modifier = Modifier.size(120.dp).padding(bottom = 24.dp)
         )
