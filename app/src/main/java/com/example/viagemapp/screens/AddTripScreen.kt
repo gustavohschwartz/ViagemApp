@@ -18,21 +18,27 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.viagemapp.R
+import com.example.viagemapp.database.AppDatabase
+import com.example.viagemapp.entity.Trip
 import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTripScreen(navController: NavController) {
+    val ctx = LocalContext.current
+    val tripDao = AppDatabase.getDatabase(ctx).tripDao()
+    val tripViewModel: TripViewModel =
+        viewModel(factory = TripViewModelFactory(tripDao))
+
     var destination by remember { mutableStateOf(TextFieldValue()) }
     var startDate by remember { mutableStateOf<Date?>(null) }
     var endDate by remember { mutableStateOf<Date?>(null) }
     var budget by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf("Business") }
-
-    val context = LocalContext.current
 
     fun formatDate(date: Date?, defaultText: String): String {
         return date?.let {
@@ -43,7 +49,7 @@ fun AddTripScreen(navController: NavController) {
     fun showDatePicker(onDateSelected: (Date) -> Unit) {
         val calendar = Calendar.getInstance()
         val datePickerDialog = DatePickerDialog(
-            context,
+            ctx,
             { _, year, month, dayOfMonth ->
                 calendar.set(year, month, dayOfMonth)
                 onDateSelected(calendar.time)
@@ -128,12 +134,12 @@ fun AddTripScreen(navController: NavController) {
                 }
             }
 
-            // Datas
+            // Data de ida
             Button(
                 onClick = {
                     showDatePicker { date ->
                         if (endDate != null && date.after(endDate)) {
-                            Toast.makeText(context, "Data de ida não pode ser depois da volta.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(ctx, "Data de ida não pode ser depois da volta.", Toast.LENGTH_SHORT).show()
                         } else {
                             startDate = date
                         }
@@ -144,11 +150,12 @@ fun AddTripScreen(navController: NavController) {
                 Text(formatDate(startDate, "Selecione a data de ida"))
             }
 
+            // Data de volta
             Button(
                 onClick = {
                     showDatePicker { date ->
                         if (startDate != null && date.before(startDate)) {
-                            Toast.makeText(context, "Data de volta não pode ser antes da ida.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(ctx, "Data de volta não pode ser antes da ida.", Toast.LENGTH_SHORT).show()
                         } else {
                             endDate = date
                         }
@@ -182,13 +189,23 @@ fun AddTripScreen(navController: NavController) {
                     val validDates = startDate != null && endDate != null && !startDate!!.after(endDate!!)
 
                     when {
-                        destination.text.isBlank() -> Toast.makeText(context, "Informe o destino.", Toast.LENGTH_SHORT).show()
-                        startDate == null -> Toast.makeText(context, "Selecione a data de ida.", Toast.LENGTH_SHORT).show()
-                        endDate == null -> Toast.makeText(context, "Selecione a data de volta.", Toast.LENGTH_SHORT).show()
-                        !validDates -> Toast.makeText(context, "Datas inválidas.", Toast.LENGTH_SHORT).show()
-                        budgetValue == null || budgetValue <= 0 -> Toast.makeText(context, "Informe um orçamento válido.", Toast.LENGTH_SHORT).show()
+                        destination.text.isBlank() -> Toast.makeText(ctx, "Informe o destino.", Toast.LENGTH_SHORT).show()
+                        startDate == null -> Toast.makeText(ctx, "Selecione a data de ida.", Toast.LENGTH_SHORT).show()
+                        endDate == null -> Toast.makeText(ctx, "Selecione a data de volta.", Toast.LENGTH_SHORT).show()
+                        !validDates -> Toast.makeText(ctx, "Datas inválidas.", Toast.LENGTH_SHORT).show()
+                        budgetValue == null || budgetValue <= 0 -> Toast.makeText(ctx, "Informe um orçamento válido.", Toast.LENGTH_SHORT).show()
                         else -> {
-                            Toast.makeText(context, "Viagem adicionada!", Toast.LENGTH_SHORT).show()
+                            val trip = Trip(
+                                destination = destination.text,
+                                startDate = startDate!!.time,
+                                endDate = endDate!!.time,
+                                budget = budgetValue,
+                                type = selectedType
+                            )
+
+                            tripViewModel.addTrip(trip)
+
+                            Toast.makeText(ctx, "Viagem salva com sucesso!", Toast.LENGTH_SHORT).show()
                             navController.navigate("menu") {
                                 popUpTo("menu") { inclusive = true }
                             }
