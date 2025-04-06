@@ -18,6 +18,7 @@ import com.example.viagemapp.entity.Trip
 import java.text.SimpleDateFormat
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MenuScreen(navController: NavController, username: String) {
     val context = LocalContext.current
@@ -26,6 +27,20 @@ fun MenuScreen(navController: NavController, username: String) {
     val tripList by tripViewModel.trips.collectAsState()
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Minhas Viagens") },
+                actions = {
+                    TextButton(onClick = {
+                        navController.navigate("login") {
+                            popUpTo("menu") { inclusive = true }
+                        }
+                    }) {
+                        Text("Sair", color = MaterialTheme.colorScheme.onSurface)
+                    }
+                }
+            )
+        },
         bottomBar = {
             BottomNavBar(navController = navController, username = username)
         }
@@ -36,12 +51,6 @@ fun MenuScreen(navController: NavController, username: String) {
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
-            Text(
-                text = "Minhas Viagens",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
             if (tripList.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
