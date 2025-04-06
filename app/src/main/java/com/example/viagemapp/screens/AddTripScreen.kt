@@ -28,11 +28,10 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTripScreen(navController: NavController) {
+fun AddTripScreen(navController: NavController, username: String) {
     val ctx = LocalContext.current
     val tripDao = AppDatabase.getDatabase(ctx).tripDao()
-    val tripViewModel: TripViewModel =
-        viewModel(factory = TripViewModelFactory(tripDao))
+    val tripViewModel: TripViewModel = viewModel(factory = TripViewModelFactory(tripDao, username))
 
     var destination by remember { mutableStateOf(TextFieldValue()) }
     var startDate by remember { mutableStateOf<Date?>(null) }
@@ -85,7 +84,6 @@ fun AddTripScreen(navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Destino
             OutlinedTextField(
                 value = destination,
                 onValueChange = { destination = it },
@@ -93,7 +91,6 @@ fun AddTripScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Tipo de viagem com imagem
             Text("Tipo de Viagem:")
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -134,7 +131,6 @@ fun AddTripScreen(navController: NavController) {
                 }
             }
 
-            // Data de ida
             Button(
                 onClick = {
                     showDatePicker { date ->
@@ -150,7 +146,6 @@ fun AddTripScreen(navController: NavController) {
                 Text(formatDate(startDate, "Selecione a data de ida"))
             }
 
-            // Data de volta
             Button(
                 onClick = {
                     showDatePicker { date ->
@@ -166,7 +161,6 @@ fun AddTripScreen(navController: NavController) {
                 Text(formatDate(endDate, "Selecione a data de volta"))
             }
 
-            // Orçamento
             OutlinedTextField(
                 value = budget,
                 onValueChange = { newValue ->
@@ -182,7 +176,6 @@ fun AddTripScreen(navController: NavController) {
                 prefix = { Text("R$ ") }
             )
 
-            // Confirmar
             Button(
                 onClick = {
                     val budgetValue = budget.toDoubleOrNull()
@@ -200,14 +193,15 @@ fun AddTripScreen(navController: NavController) {
                                 startDate = startDate!!.time,
                                 endDate = endDate!!.time,
                                 budget = budgetValue,
-                                type = selectedType
+                                type = selectedType,
+                                username = username
                             )
 
                             tripViewModel.addTrip(trip)
 
                             Toast.makeText(ctx, "Viagem salva com sucesso!", Toast.LENGTH_SHORT).show()
-                            navController.navigate("menu") {
-                                popUpTo("menu") { inclusive = true }
+                            navController.navigate("menu/$username") {
+                                popUpTo("menu/$username") { inclusive = true }
                             }
                         }
                     }

@@ -11,5 +11,6 @@ data class Trip(
     val startDate: Long,
     val endDate: Long,
     val budget: Double,
-    val type: String
+    val type: String,
+    val username: String
 )

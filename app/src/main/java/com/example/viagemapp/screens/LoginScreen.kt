@@ -18,9 +18,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.example.viagemapp.R
 import com.example.viagemapp.database.AppDatabase
 import kotlinx.coroutines.launch
@@ -34,7 +31,6 @@ fun LoginScreen(navController: NavController) {
     val state = loginViewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Scaffold(
@@ -51,7 +47,9 @@ fun LoginScreen(navController: NavController) {
             Image(
                 painter = painterResource(id = R.drawable.newlogo),
                 contentDescription = "Logotipo",
-                modifier = Modifier.size(120.dp).padding(bottom = 24.dp)
+                modifier = Modifier
+                    .size(120.dp)
+                    .padding(bottom = 24.dp)
             )
 
             OutlinedTextField(
@@ -91,10 +89,10 @@ fun LoginScreen(navController: NavController) {
             }
         }
 
-        // Se login OK, navega
+        // Se login OK, navega para menu/{username}
         if (state.value.isLoggedIn) {
             LaunchedEffect(Unit) {
-                navController.navigate("menu") {
+                navController.navigate("menu/${state.value.username}") {
                     popUpTo("login") { inclusive = true }
                 }
             }

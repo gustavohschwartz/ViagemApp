@@ -44,17 +44,19 @@ class MainActivity : ComponentActivity() {
             navController = navController,
             startDestination = "login"
         ) {
-            composable(route = "login") {
+            composable("login") {
                 LoginScreen(navController = navController)
             }
-            composable(route = "register") {
+            composable("register") {
                 RegisterScreen(navController = navController)
             }
-            composable(route = "menu") {
-                MenuScreen(navController = navController)
+            composable("menu/{username}") { backStackEntry ->
+                val username = backStackEntry.arguments?.getString("username") ?: ""
+                MenuScreen(navController = navController, username = username)
             }
-            composable(route = "add_trip") {
-                AddTripScreen(navController = navController)
+            composable("add_trip/{username}") { backStackEntry ->
+                val username = backStackEntry.arguments?.getString("username") ?: ""
+                AddTripScreen(navController = navController, username = username)
             }
         }
     }

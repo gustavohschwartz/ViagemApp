@@ -11,7 +11,7 @@ import com.example.viagemapp.entity.Trip
 
 @Database(
     entities = [RegisterUser::class, Trip::class],
-    version = 2, // aumente se modificar o banco
+    version = 3, // aumente se modificar o banco
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

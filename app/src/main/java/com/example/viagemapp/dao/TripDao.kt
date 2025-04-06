@@ -9,8 +9,9 @@ interface TripDao {
     @Insert
     suspend fun insert(trip: Trip)
 
-    @Query("SELECT * FROM Trip ORDER BY startDate DESC")
-    fun getAllTrips(): Flow<List<Trip>>
+    @Query("SELECT * FROM Trip WHERE username = :username ORDER BY startDate DESC")
+    fun getTripsByUsername(username: String): Flow<List<Trip>>
+
 
     @Delete
     suspend fun delete(trip: Trip)

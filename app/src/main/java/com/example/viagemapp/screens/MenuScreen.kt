@@ -19,15 +19,15 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun MenuScreen(navController: NavController) {
+fun MenuScreen(navController: NavController, username: String) {
     val context = LocalContext.current
     val tripDao = AppDatabase.getDatabase(context).tripDao()
-    val tripViewModel: TripViewModel = viewModel(factory = TripViewModelFactory(tripDao))
+    val tripViewModel: TripViewModel = viewModel(factory = TripViewModelFactory(tripDao, username))
     val tripList by tripViewModel.trips.collectAsState()
 
     Scaffold(
         bottomBar = {
-            BottomNavBar(navController = navController)
+            BottomNavBar(navController = navController, username = username)
         }
     ) { innerPadding ->
         Column(
@@ -81,7 +81,7 @@ fun TripItem(trip: Trip) {
 }
 
 @Composable
-fun BottomNavBar(navController: NavController) {
+fun BottomNavBar(navController: NavController, username: String) {
     BottomAppBar(
         containerColor = MaterialTheme.colorScheme.primary
     ) {
@@ -89,7 +89,7 @@ fun BottomNavBar(navController: NavController) {
 
         FloatingActionButton(
             onClick = {
-                navController.navigate("add_trip")
+                navController.navigate("add_trip/$username")
             },
             containerColor = MaterialTheme.colorScheme.secondary
         ) {

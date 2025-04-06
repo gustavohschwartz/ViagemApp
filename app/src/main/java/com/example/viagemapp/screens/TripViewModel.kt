@@ -10,9 +10,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class TripViewModel(private val tripDao: TripDao) : ViewModel() {
+class TripViewModel(
+    private val tripDao: TripDao,
+    username: String
+) : ViewModel() {
 
-    val trips: StateFlow<List<Trip>> = tripDao.getAllTrips()
+    val trips: StateFlow<List<Trip>> = tripDao.getTripsByUsername(username)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun addTrip(trip: Trip) {
@@ -27,3 +30,4 @@ class TripViewModel(private val tripDao: TripDao) : ViewModel() {
         }
     }
 }
+
