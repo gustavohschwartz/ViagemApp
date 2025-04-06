@@ -22,4 +22,7 @@ interface RegisterUserDao {
     suspend fun findById(id: Int): RegisterUser?
     @Query("select * from RegisterUser")
     suspend fun findAll(): List<RegisterUser>
+    @Query("SELECT * FROM RegisterUser WHERE username = :username")
+    suspend fun findByUsername(username: String): RegisterUser?
+
 }
