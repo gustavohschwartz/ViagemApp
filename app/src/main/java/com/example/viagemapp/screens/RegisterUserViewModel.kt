@@ -105,4 +105,9 @@ class RegisterUserViewModel(private val registerUserDao: RegisterUserDao) : View
     fun cleanErrorMessage() {
         _uiState.value = _uiState.value.copy(errorMessage = "")
     }
+
+    fun clearFields() {
+        _uiState.value = RegisterUser()
+    }
+
 }
