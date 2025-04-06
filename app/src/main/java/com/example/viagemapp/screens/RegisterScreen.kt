@@ -22,11 +22,16 @@ import androidx.navigation.NavController
 import com.example.viagemapp.components.ErrorDialog
 import com.example.viagemapp.components.TextField
 import com.example.viagemapp.components.PasswordField
+import com.example.viagemapp.dao.RegisterUserDao
+import com.example.viagemapp.database.AppDatabase
 import com.example.viagemapp.ui.theme.ViagemAppTheme
 
 @Composable
 fun RegisterScreen(navController: NavController) {
-    val registerUserViewModel: RegisterUserViewModel = viewModel()
+    val ctx = LocalContext.current
+    val RegisterUserDao = AppDatabase.getDatabase(ctx).registerUserDao()
+    val registerUserViewModel: RegisterUserViewModel =
+        viewModel(factory = RegisterUserViewFactory(RegisterUserDao))
 
     Scaffold {
         Column(
@@ -87,10 +92,7 @@ fun RegisterScreen(navController: NavController) {
         Button(
             modifier = Modifier.padding(top = 16.dp),
             onClick = {
-                if (registerUserViewModel.register()) {
-                    Toast.makeText(ctx, "Usuário Cadastrado",
-                        Toast.LENGTH_SHORT).show()
-                }
+                registerUserViewModel.register()
             }
         ) {
             Text(text = "Cadastrar Usuário")
