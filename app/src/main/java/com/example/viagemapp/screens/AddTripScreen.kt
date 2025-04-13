@@ -3,6 +3,7 @@ package com.example.viagemapp.screens
 import android.app.DatePickerDialog
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,7 +48,7 @@ fun AddTripScreen(navController: NavController, username: String, existingTrip: 
 
     fun showDatePicker(onDateSelected: (Date) -> Unit) {
         val calendar = Calendar.getInstance()
-        val datePickerDialog = DatePickerDialog(
+        DatePickerDialog(
             ctx,
             { _, year, month, dayOfMonth ->
                 calendar.set(year, month, dayOfMonth)
@@ -56,23 +57,34 @@ fun AddTripScreen(navController: NavController, username: String, existingTrip: 
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
-        )
-        datePickerDialog.show()
+        ).show()
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (existingTrip == null) "Nova Viagem" else "Editar Viagem") },
+                title = {
+                    Text(
+                        if (existingTrip == null) "Nova Viagem" else "Editar Viagem",
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = {
                         navController.navigate("menu/$username") {
                             popUpTo("menu/$username") { inclusive = true }
                         }
                     }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar")
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Voltar",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             )
         }
     ) { innerPadding ->
@@ -96,13 +108,16 @@ fun AddTripScreen(navController: NavController, username: String, existingTrip: 
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
+                val iconBgColor = MaterialTheme.colorScheme.surface
+
                 IconButton(
                     onClick = { selectedType = "Business" },
                     modifier = Modifier
                         .size(72.dp)
+                        .background(iconBgColor, RoundedCornerShape(12.dp))
                         .border(
                             width = if (selectedType == "Business") 2.dp else 0.dp,
-                            color = if (selectedType == "Business") Color.Blue else Color.Transparent,
+                            color = if (selectedType == "Business") MaterialTheme.colorScheme.primary else Color.Transparent,
                             shape = RoundedCornerShape(12.dp)
                         )
                 ) {
@@ -117,9 +132,10 @@ fun AddTripScreen(navController: NavController, username: String, existingTrip: 
                     onClick = { selectedType = "Leisure" },
                     modifier = Modifier
                         .size(72.dp)
+                        .background(iconBgColor, RoundedCornerShape(12.dp))
                         .border(
                             width = if (selectedType == "Leisure") 2.dp else 0.dp,
-                            color = if (selectedType == "Leisure") Color.Blue else Color.Transparent,
+                            color = if (selectedType == "Leisure") MaterialTheme.colorScheme.primary else Color.Transparent,
                             shape = RoundedCornerShape(12.dp)
                         )
                 ) {
