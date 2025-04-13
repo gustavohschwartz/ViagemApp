@@ -1,9 +1,11 @@
 package com.example.viagemapp.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -14,9 +16,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.viagemapp.R
 import com.example.viagemapp.database.AppDatabase
 import com.example.viagemapp.entity.Trip
 import java.text.SimpleDateFormat
@@ -124,24 +128,54 @@ fun TripItem(
             }
         },
         dismissContent = {
+            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val iconRes = if (trip.type == "Business") R.drawable.ic_business else R.drawable.ic_leisure
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                    Text("Destino: ${trip.destination}", style = MaterialTheme.typography.titleMedium)
-                    Text("Tipo: ${if (trip.type == "Business") "Negócio" else "Lazer"}")
-                    Text("Ida: ${sdf.format(Date(trip.startDate))}")
-                    Text("Volta: ${sdf.format(Date(trip.endDate))}")
-                    Text("Orçamento: R$ %.2f".format(trip.budget))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Destino: ${trip.destination}", style = MaterialTheme.typography.titleMedium)
+                        Text("Ida: ${sdf.format(Date(trip.startDate))}")
+                        Text("Volta: ${sdf.format(Date(trip.endDate))}")
+                        Text("Orçamento: R$ %.2f".format(trip.budget))
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .background(
+                                color = Color(0xFF1A237E), // azul escuro
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = iconRes),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(40.dp)
+                        )
+                    }
                 }
             }
         }
     )
 }
+
 
 @Composable
 fun BottomNavBar(navController: NavController, username: String) {
