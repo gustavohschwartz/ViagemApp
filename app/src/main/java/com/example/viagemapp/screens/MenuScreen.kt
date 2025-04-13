@@ -1,14 +1,18 @@
 package com.example.viagemapp.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -36,7 +40,7 @@ fun MenuScreen(navController: NavController, username: String) {
                             popUpTo("menu") { inclusive = true }
                         }
                     }) {
-                        Text("Sair", color = MaterialTheme.colorScheme.onSurface)
+                        Text("Sair", color = Color.Black)
                     }
                 }
             )
@@ -61,7 +65,11 @@ fun MenuScreen(navController: NavController, username: String) {
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(tripList) { trip ->
-                        TripItem(trip)
+                        TripItem(
+                            trip = trip,
+                            onDelete = { tripViewModel.deleteTrip(trip) },
+                            onEdit = { navController.navigate("edit_trip/${trip.id}/$username") }
+                        )
                     }
                 }
             }
@@ -69,24 +77,70 @@ fun MenuScreen(navController: NavController, username: String) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TripItem(trip: Trip) {
-    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text("Destino: ${trip.destination}", style = MaterialTheme.typography.titleMedium)
-            Text("Tipo: ${if (trip.type == "Business") "Negócio" else "Lazer"}")
-            Text("Ida: ${sdf.format(Date(trip.startDate))}")
-            Text("Volta: ${sdf.format(Date(trip.endDate))}")
-            Text("Orçamento: R$ %.2f".format(trip.budget))
+fun TripItem(
+    trip: Trip,
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
+) {
+    val dismissState = rememberDismissState(
+        confirmValueChange = {
+            when (it) {
+                DismissValue.DismissedToStart -> {
+                    onDelete()
+                    true
+                }
+                DismissValue.DismissedToEnd -> {
+                    onEdit()
+                    true
+                }
+                else -> false
+            }
         }
-    }
+    )
+
+    SwipeToDismiss(
+        state = dismissState,
+        background = {
+            val direction = dismissState.dismissDirection ?: return@SwipeToDismiss
+            val color = when (direction) {
+                DismissDirection.StartToEnd -> MaterialTheme.colorScheme.primaryContainer
+                DismissDirection.EndToStart -> MaterialTheme.colorScheme.errorContainer
+            }
+            val icon = when (direction) {
+                DismissDirection.StartToEnd -> Icons.Default.Edit
+                DismissDirection.EndToStart -> Icons.Default.Delete
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color)
+                    .padding(horizontal = 20.dp),
+                contentAlignment = if (direction == DismissDirection.StartToEnd)
+                    Alignment.CenterStart else Alignment.CenterEnd
+            ) {
+                Icon(icon, contentDescription = null)
+            }
+        },
+        dismissContent = {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                    Text("Destino: ${trip.destination}", style = MaterialTheme.typography.titleMedium)
+                    Text("Tipo: ${if (trip.type == "Business") "Negócio" else "Lazer"}")
+                    Text("Ida: ${sdf.format(Date(trip.startDate))}")
+                    Text("Volta: ${sdf.format(Date(trip.endDate))}")
+                    Text("Orçamento: R$ %.2f".format(trip.budget))
+                }
+            }
+        }
+    )
 }
 
 @Composable

@@ -28,16 +28,16 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTripScreen(navController: NavController, username: String) {
+fun AddTripScreen(navController: NavController, username: String, existingTrip: Trip? = null) {
     val ctx = LocalContext.current
     val tripDao = AppDatabase.getDatabase(ctx).tripDao()
     val tripViewModel: TripViewModel = viewModel(factory = TripViewModelFactory(tripDao, username))
 
-    var destination by remember { mutableStateOf(TextFieldValue()) }
-    var startDate by remember { mutableStateOf<Date?>(null) }
-    var endDate by remember { mutableStateOf<Date?>(null) }
-    var budget by remember { mutableStateOf("") }
-    var selectedType by remember { mutableStateOf("Business") }
+    var destination by remember { mutableStateOf(TextFieldValue(existingTrip?.destination ?: "")) }
+    var startDate by remember { mutableStateOf(existingTrip?.startDate?.let { Date(it) }) }
+    var endDate by remember { mutableStateOf(existingTrip?.endDate?.let { Date(it) }) }
+    var budget by remember { mutableStateOf(existingTrip?.budget?.toString() ?: "") }
+    var selectedType by remember { mutableStateOf(existingTrip?.type ?: "Business") }
 
     fun formatDate(date: Date?, defaultText: String): String {
         return date?.let {
@@ -63,11 +63,11 @@ fun AddTripScreen(navController: NavController, username: String) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nova Viagem") },
+                title = { Text(if (existingTrip == null) "Nova Viagem" else "Editar Viagem") },
                 navigationIcon = {
                     IconButton(onClick = {
-                        navController.navigate("menu") {
-                            popUpTo("menu") { inclusive = true }
+                        navController.navigate("menu/$username") {
+                            popUpTo("menu/$username") { inclusive = true }
                         }
                     }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar")
@@ -164,7 +164,7 @@ fun AddTripScreen(navController: NavController, username: String) {
             OutlinedTextField(
                 value = budget,
                 onValueChange = { newValue ->
-                    if (newValue.matches(Regex("^\\d*\\.?\\d*\$"))) {
+                    if (newValue.matches(Regex("^\\d*\\.?\\d*"))) {
                         budget = newValue
                     }
                 },
@@ -189,6 +189,7 @@ fun AddTripScreen(navController: NavController, username: String) {
                         budgetValue == null || budgetValue <= 0 -> Toast.makeText(ctx, "Informe um orçamento válido.", Toast.LENGTH_SHORT).show()
                         else -> {
                             val trip = Trip(
+                                id = existingTrip?.id ?: 0,
                                 destination = destination.text,
                                 startDate = startDate!!.time,
                                 endDate = endDate!!.time,
@@ -197,9 +198,14 @@ fun AddTripScreen(navController: NavController, username: String) {
                                 username = username
                             )
 
-                            tripViewModel.addTrip(trip)
+                            if (existingTrip != null) {
+                                tripViewModel.updateTrip(trip)
+                                Toast.makeText(ctx, "Viagem atualizada com sucesso!", Toast.LENGTH_SHORT).show()
+                            } else {
+                                tripViewModel.addTrip(trip)
+                                Toast.makeText(ctx, "Viagem salva com sucesso!", Toast.LENGTH_SHORT).show()
+                            }
 
-                            Toast.makeText(ctx, "Viagem salva com sucesso!", Toast.LENGTH_SHORT).show()
                             navController.navigate("menu/$username") {
                                 popUpTo("menu/$username") { inclusive = true }
                             }
@@ -208,7 +214,7 @@ fun AddTripScreen(navController: NavController, username: String) {
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Confirmar")
+                Text(if (existingTrip == null) "Confirmar" else "Atualizar")
             }
         }
     }

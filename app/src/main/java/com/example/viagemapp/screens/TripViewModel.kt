@@ -24,10 +24,17 @@ class TripViewModel(
         }
     }
 
+    fun updateTrip(trip: Trip) {
+        viewModelScope.launch {
+            tripDao.update(trip)
+        }
+    }
+
     fun deleteTrip(trip: Trip) {
         viewModelScope.launch {
             tripDao.delete(trip)
         }
     }
 }
+
 
