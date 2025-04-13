@@ -1,18 +1,10 @@
 package com.example.viagemapp.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,8 +17,8 @@ import com.example.viagemapp.components.TextField
 import com.example.viagemapp.database.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(navController: NavController) {
     val ctx = LocalContext.current
@@ -38,11 +30,34 @@ fun RegisterScreen(navController: NavController) {
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text("Cadastro", color = MaterialTheme.colorScheme.onPrimary)
+                },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        navController.navigate("login") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Voltar",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) {
+    ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(it)
+                .padding(innerPadding)
                 .padding(16.dp)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -106,13 +121,6 @@ fun RegisterUserFields(
         Text(text = "Cadastrar Usuário")
     }
 
-    Button(
-        modifier = Modifier.padding(top = 16.dp),
-        onClick = { navController.navigate("login") }
-    ) {
-        Text(text = "Voltar")
-    }
-
     // Mostrar snackbar e redirecionar após salvar
     if (registerUser.value.isSaved) {
         LaunchedEffect(Unit) {
@@ -121,14 +129,12 @@ fun RegisterUserFields(
                     message = "Usuário cadastrado com sucesso!",
                     actionLabel = "OK"
                 )
-
-                if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                if (result == SnackbarResult.ActionPerformed) {
                     registerUserViewModel.clearFields()
                     navController.navigate("login")
                 }
             }
         }
-
     }
 
     // Dialog de erro
