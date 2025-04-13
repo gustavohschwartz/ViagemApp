@@ -93,14 +93,20 @@ class RegisterUserViewModel(private val registerUserDao: RegisterUserDao) : View
             _uiState.value.validateAllField()
 
             viewModelScope.launch {
-                registerUserDao.insert(_uiState.value.toEntity())
-                _uiState.value = _uiState.value.copy(isSaved = true)
+                val existingUserCount = registerUserDao.countByUsername(_uiState.value.user)
+                if (existingUserCount > 0) {
+                    _uiState.value = _uiState.value.copy(errorMessage = "Nome de usuário já existe.")
+                } else {
+                    registerUserDao.insert(_uiState.value.toEntity())
+                    _uiState.value = _uiState.value.copy(isSaved = true)
+                }
             }
         } catch (e: Exception) {
             _uiState.value =
                 _uiState.value.copy(errorMessage = e.message ?: "Erro desconhecido")
         }
     }
+
 
     fun cleanErrorMessage() {
         _uiState.value = _uiState.value.copy(errorMessage = "")

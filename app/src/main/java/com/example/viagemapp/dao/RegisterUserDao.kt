@@ -24,5 +24,8 @@ interface RegisterUserDao {
     suspend fun findAll(): List<RegisterUser>
     @Query("SELECT * FROM RegisterUser WHERE username = :username")
     suspend fun findByUsername(username: String): RegisterUser?
+    @Query("SELECT COUNT(*) FROM RegisterUser WHERE username = :username")
+    suspend fun countByUsername(username: String): Int
+
 
 }
