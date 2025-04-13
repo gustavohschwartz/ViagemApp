@@ -37,14 +37,17 @@ fun MenuScreen(navController: NavController, username: String) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Minhas Viagens") },
+                title = { Text("Minhas Viagens", color = MaterialTheme.colorScheme.onPrimary) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
                 actions = {
                     TextButton(onClick = {
                         navController.navigate("login") {
                             popUpTo("menu") { inclusive = true }
                         }
                     }) {
-                        Text("Sair", color = Color.Black)
+                        Text("Sair", color = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             )
@@ -135,6 +138,9 @@ fun TripItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Row(
@@ -147,7 +153,11 @@ fun TripItem(
                     Column(
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Destino: ${trip.destination}", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "Destino: ${trip.destination}",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                         Text("Ida: ${sdf.format(Date(trip.startDate))}")
                         Text("Volta: ${sdf.format(Date(trip.endDate))}")
                         Text("Orçamento: R$ %.2f".format(trip.budget))
@@ -157,7 +167,7 @@ fun TripItem(
                         modifier = Modifier
                             .size(64.dp)
                             .background(
-                                color = Color(0xFF1A237E), // azul escuro
+                                color = MaterialTheme.colorScheme.primary,
                                 shape = RoundedCornerShape(12.dp)
                             )
                             .padding(8.dp),
@@ -166,8 +176,7 @@ fun TripItem(
                         Image(
                             painter = painterResource(id = iconRes),
                             contentDescription = null,
-                            modifier = Modifier
-                                .size(40.dp)
+                            modifier = Modifier.size(40.dp)
                         )
                     }
                 }
