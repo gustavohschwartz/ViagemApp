@@ -1,7 +1,9 @@
 package com.example.viagemapp.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -62,6 +63,14 @@ fun MenuScreen(navController: NavController, username: String) {
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
+            Text(
+                text = "Dica: pressione e segure para editar uma viagem ou deslize para a esquerda para excluir.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             if (tripList.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -84,7 +93,7 @@ fun MenuScreen(navController: NavController, username: String) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun TripItem(
     trip: Trip,
@@ -93,54 +102,44 @@ fun TripItem(
 ) {
     val dismissState = rememberDismissState(
         confirmValueChange = {
-            when (it) {
-                DismissValue.DismissedToStart -> {
-                    onDelete()
-                    true
-                }
-                DismissValue.DismissedToEnd -> {
-                    onEdit()
-                    true
-                }
-                else -> false
-            }
+            if (it == DismissValue.DismissedToStart) {
+                onDelete()
+                true
+            } else false
         }
     )
 
+    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val iconRes = if (trip.type == "Business") R.drawable.ic_business else R.drawable.ic_leisure
+
     SwipeToDismiss(
         state = dismissState,
+        directions = setOf(DismissDirection.EndToStart), // Somente para excluir
         background = {
             val direction = dismissState.dismissDirection ?: return@SwipeToDismiss
-            val color = when (direction) {
-                DismissDirection.StartToEnd -> MaterialTheme.colorScheme.primaryContainer
-                DismissDirection.EndToStart -> MaterialTheme.colorScheme.errorContainer
-            }
-            val icon = when (direction) {
-                DismissDirection.StartToEnd -> Icons.Default.Edit
-                DismissDirection.EndToStart -> Icons.Default.Delete
-            }
+            val color = if (direction == DismissDirection.EndToStart)
+                MaterialTheme.colorScheme.errorContainer else Color.Transparent
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color)
                     .padding(horizontal = 20.dp),
-                contentAlignment = if (direction == DismissDirection.StartToEnd)
-                    Alignment.CenterStart else Alignment.CenterEnd
+                contentAlignment = Alignment.CenterEnd
             ) {
-                Icon(icon, contentDescription = null)
+                Icon(Icons.Default.Delete, contentDescription = null)
             }
         },
         dismissContent = {
-            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            val iconRes = if (trip.type == "Business") R.drawable.ic_business else R.drawable.ic_leisure
-
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                ),
+                    .padding(vertical = 4.dp)
+                    .combinedClickable(
+                        onClick = {},
+                        onLongClick = onEdit
+                    ),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Row(
@@ -150,9 +149,7 @@ fun TripItem(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             "Destino: ${trip.destination}",
                             style = MaterialTheme.typography.titleMedium,
@@ -184,7 +181,6 @@ fun TripItem(
         }
     )
 }
-
 
 @Composable
 fun BottomNavBar(navController: NavController, username: String) {
