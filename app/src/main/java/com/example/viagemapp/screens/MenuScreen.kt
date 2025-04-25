@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.viagemapp.R
+import com.example.viagemapp.components.RoteiroSuggestionButton
 import com.example.viagemapp.database.AppDatabase
 import com.example.viagemapp.entity.Trip
 import java.text.SimpleDateFormat
@@ -114,7 +115,7 @@ fun TripItem(
 
     SwipeToDismiss(
         state = dismissState,
-        directions = setOf(DismissDirection.EndToStart), // Somente para excluir
+        directions = setOf(DismissDirection.EndToStart),
         background = {
             val direction = dismissState.dismissDirection ?: return@SwipeToDismiss
             val color = if (direction == DismissDirection.EndToStart)
@@ -142,40 +143,43 @@ fun TripItem(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 elevation = CardDefaults.cardElevation(4.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            "Destino: ${trip.destination}",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text("Ida: ${sdf.format(Date(trip.startDate))}")
-                        Text("Volta: ${sdf.format(Date(trip.endDate))}")
-                        Text("Orçamento: R$ %.2f".format(trip.budget))
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Destino: ${trip.destination}",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text("Ida: ${sdf.format(Date(trip.startDate))}")
+                            Text("Volta: ${sdf.format(Date(trip.endDate))}")
+                            Text("Orçamento: R$ %.2f".format(trip.budget))
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = iconRes),
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .size(64.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = iconRes),
-                            contentDescription = null,
-                            modifier = Modifier.size(40.dp)
-                        )
-                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    RoteiroSuggestionButton(destino = trip.destination)
                 }
             }
         }
