@@ -5,6 +5,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Alignment
 import com.example.viagemapp.api.GeminiService
 
@@ -48,14 +50,31 @@ fun RoteiroSuggestionButton(destino: String) {
             },
             title = { Text("Sugestão de Roteiro") },
             text = {
-                if (isLoading) {
-                    CircularProgressIndicator()
-                } else if (errorMessage != null) {
-                    Text("Erro: $errorMessage")
-                } else {
-                    Text(suggestion)
+                Box(
+                    modifier = Modifier
+                        .heightIn(max = 400.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    when {
+                        isLoading -> {
+                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                        }
+                        errorMessage != null -> {
+                            Text(
+                                text = "Erro: $errorMessage",
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                        else -> {
+                            Text(
+                                text = suggestion,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                    }
                 }
             }
         )
     }
+
 }
