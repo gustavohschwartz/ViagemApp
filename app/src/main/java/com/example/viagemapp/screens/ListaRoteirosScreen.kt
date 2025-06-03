@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-
+import com.example.viagemapp.entity.Roteiro
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -19,12 +19,10 @@ fun ListaRoteirosScreen(
     navController: NavController,
     username: String
 ) {
-    val roteiros by roteiroViewModel.roteiros.collectAsState()
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        roteiroViewModel.carregarTodosRoteiros()
-    }
+    // Carrega apenas os roteiros aceitos do usuário logado
+    val roteiros by roteiroViewModel.roteirosDoUsuario(username).collectAsState(initial = emptyList())
 
     Scaffold(
         topBar = {
@@ -38,21 +36,46 @@ fun ListaRoteirosScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            items(roteiros) { roteiro ->
-                Card(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(4.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Destino: ${roteiro.destino}", style = MaterialTheme.typography.titleMedium)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text("Sugestão: ${roteiro.sugestao}", style = MaterialTheme.typography.bodyMedium)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text("Aceito: ${if (roteiro.aceito) "Sim" else "Não"}")
-                    }
+            items(roteiros.filter { it.aceito }) { roteiro ->
+                RoteiroCard(roteiro = roteiro, onDelete = {
+                    roteiroViewModel.excluirRoteiro(roteiro)
+                })
+            }
+        }
+    }
+}
+
+@Composable
+fun RoteiroCard(roteiro: Roteiro, onDelete: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("Destino: ${roteiro.destino}", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = if (expanded) roteiro.sugestao else roteiro.sugestao.take(200) + "...",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            if (roteiro.sugestao.length > 200) {
+                TextButton(onClick = { expanded = !expanded }) {
+                    Text(if (expanded) "Ver menos" else "Ver mais")
                 }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+            Text("Aceito: ${if (roteiro.aceito) "Sim" else "Não"}")
+
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedButton(onClick = onDelete) {
+                Text("Excluir")
             }
         }
     }

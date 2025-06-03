@@ -8,11 +8,12 @@ import com.example.viagemapp.dao.RegisterUserDao
 import com.example.viagemapp.dao.RoteiroDao
 import com.example.viagemapp.dao.TripDao
 import com.example.viagemapp.entity.RegisterUser
+import com.example.viagemapp.entity.Roteiro
 import com.example.viagemapp.entity.Trip
 
 @Database(
-    entities = [RegisterUser::class, Trip::class],
-    version = 4,
+    entities = [RegisterUser::class, Trip::class, Roteiro::class],
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

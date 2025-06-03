@@ -73,6 +73,10 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
+    implementation("io.github.jeziellago:compose-markdown:0.3.4")
+
+
+
 
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation("androidx.core:core-ktx:1.15.0")

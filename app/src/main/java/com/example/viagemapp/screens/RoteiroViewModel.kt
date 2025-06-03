@@ -5,8 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.viagemapp.api.GeminiService
 import com.example.viagemapp.entity.Roteiro
 import com.example.viagemapp.repository.RoteiroRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class RoteiroViewModel(
@@ -20,7 +19,7 @@ class RoteiroViewModel(
     private val _roteiros = MutableStateFlow<List<Roteiro>>(emptyList())
     val roteiros: StateFlow<List<Roteiro>> get() = _roteiros
 
-    // Carrega roteiro salvo ou gera um novo
+    // Carrega um roteiro salvo ou sugere novo se não houver
     fun carregarRoteiro(destino: String) {
         viewModelScope.launch {
             val roteiroCarregado = repository.obterRoteiro(destino)
@@ -28,23 +27,7 @@ class RoteiroViewModel(
         }
     }
 
-    // Salva um novo roteiro baseado no destino (usa lógica interna do repository)
-    fun salvarRoteiro(destino: String) {
-        viewModelScope.launch {
-            val roteiroSalvo = repository.obterRoteiro(destino)
-            _roteiro.value = roteiroSalvo
-        }
-    }
-
-    // Recusa roteiro e busca outro
-    fun recusarERetornarOutro(destino: String) {
-        viewModelScope.launch {
-            val novoRoteiro = repository.recusarERetornarOutro(destino)
-            _roteiro.value = novoRoteiro
-        }
-    }
-
-    // Aceita o roteiro e atualiza no banco
+    // Aceita e salva o roteiro no banco
     fun aceitarRoteiro(roteiro: Roteiro) {
         viewModelScope.launch {
             repository.aceitarRoteiro(roteiro)
@@ -52,15 +35,36 @@ class RoteiroViewModel(
         }
     }
 
-    // Carrega todos os roteiros salvos no banco
+    // Gera nova sugestão e substitui a atual
+    fun recusarERetornarOutro(destino: String) {
+        viewModelScope.launch {
+            val novoRoteiro = repository.recusarERetornarOutro(destino)
+            _roteiro.value = novoRoteiro
+        }
+    }
+
+    // Carrega todos os roteiros (para uso geral ou admin)
     fun carregarTodosRoteiros() {
         viewModelScope.launch {
-            try {
-                val lista = repository.listarTodos()
-                _roteiros.value = lista
+            _roteiros.value = try {
+                repository.listarTodos()
             } catch (e: Exception) {
-                _roteiros.value = emptyList() // Em caso de erro, retornar lista vazia
+                emptyList()
             }
+        }
+    }
+
+    // 🔹 Carrega os roteiros aceitos de um usuário específico
+    fun roteirosDoUsuario(username: String): StateFlow<List<Roteiro>> {
+        return repository.roteirosDoUsuario(username)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    }
+
+    // 🔹 Exclui um roteiro do banco de dados
+    fun excluirRoteiro(roteiro: Roteiro) {
+        viewModelScope.launch {
+            repository.excluirRoteiro(roteiro)
+            carregarTodosRoteiros()
         }
     }
 }
