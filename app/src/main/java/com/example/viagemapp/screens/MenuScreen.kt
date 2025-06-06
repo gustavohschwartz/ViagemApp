@@ -7,11 +7,12 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,12 +24,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.viagemapp.R
-import com.example.viagemapp.components.RoteiroSuggestionButton
+import com.example.viagemapp.api.GeminiService
 import com.example.viagemapp.database.AppDatabase
 import com.example.viagemapp.entity.Trip
-import com.example.viagemapp.repository.RoteiroRepository
 import java.text.SimpleDateFormat
 import java.util.*
+
+fun calcularDiasViagem(startDate: Long, endDate: Long): Int {
+    val diffMillis = endDate - startDate
+    val dias = (diffMillis / (1000 * 60 * 60 * 24)).toInt()
+    return dias.coerceAtLeast(1)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -181,7 +187,7 @@ fun TripItem(
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    RoteiroSuggestionButton(destino = trip.destination)
+                    SuggestionButtonWithDays(trip)
                 }
             }
         }
@@ -189,23 +195,72 @@ fun TripItem(
 }
 
 @Composable
+fun SuggestionButtonWithDays(trip: Trip) {
+    var showDialog by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+    var suggestion by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val days = calcularDiasViagem(trip.startDate, trip.endDate)
+
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Button(onClick = {
+            isLoading = true
+            showDialog = true
+            errorMessage = null
+            suggestion = ""
+
+            val prompt = "Sugira um roteiro de ${days} ${if (days == 1) "dia" else "dias"} para ${trip.destination}, incluindo dicas locais, culinária e pontos turísticos."
+
+            GeminiService.sugerirRoteiro(
+                destino = prompt,
+                onResult = {
+                    suggestion = it
+                    isLoading = false
+                },
+                onError = {
+                    errorMessage = it
+                    isLoading = false
+                }
+            )
+        }) {
+            Text("Sugestões para ${trip.destination}")
+        }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Fechar")
+                }
+            },
+            title = { Text("Sugestão de Roteiro") },
+            text = {
+                Box(
+                    modifier = Modifier
+                        .heightIn(max = 400.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator()
+                    } else if (errorMessage != null) {
+                        Text("Erro: $errorMessage")
+                    } else {
+                        Text(suggestion)
+                    }
+                }
+            }
+        )
+    }
+}
+
+@Composable
 fun BottomNavBar(navController: NavController, username: String) {
     BottomAppBar(
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentPadding = PaddingValues(horizontal = 16.dp)
+        containerColor = MaterialTheme.colorScheme.primary
     ) {
-        IconButton(
-            onClick = {
-                navController.navigate("lista_roteiros/$username")
-            }
-        ) {
-            Icon(
-                imageVector = Icons.Default.List,
-                contentDescription = "Ver sugestões salvas",
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-        }
-
         Spacer(Modifier.weight(1f))
 
         FloatingActionButton(
