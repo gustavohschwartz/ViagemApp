@@ -7,9 +7,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -25,18 +23,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.viagemapp.R
-import com.example.viagemapp.api.GeminiService
+import com.example.viagemapp.components.RoteiroSuggestionButton
 import com.example.viagemapp.database.AppDatabase
 import com.example.viagemapp.entity.Trip
 import com.example.viagemapp.repository.RoteiroRepository
 import java.text.SimpleDateFormat
 import java.util.*
-
-fun calcularDiasViagem(startDate: Long, endDate: Long): Int {
-    val diffMillis = endDate - startDate
-    val dias = (diffMillis / (1000 * 60 * 60 * 24)).toInt()
-    return dias.coerceAtLeast(1)
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -189,7 +181,7 @@ fun TripItem(
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    SuggestionButtonWithDays(trip)
+                    RoteiroSuggestionButton(destino = trip.destination)
                 }
             }
         }
