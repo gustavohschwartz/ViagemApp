@@ -1,8 +1,10 @@
 package com.example.viagemapp.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,8 +13,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,12 +32,13 @@ import com.example.viagemapp.R
 import com.example.viagemapp.api.GeminiService
 import com.example.viagemapp.database.AppDatabase
 import com.example.viagemapp.entity.Trip
+import com.example.viagemapp.repository.RoteiroRepository
 import java.text.SimpleDateFormat
 import java.util.*
 
 fun calcularDiasViagem(startDate: Long, endDate: Long): Int {
     val diffMillis = endDate - startDate
-    val dias = (diffMillis / (1000 * 60 * 60 * 24)).toInt()
+    val dias = (diffMillis / (1000 * 60 * 60 * 24)).toInt() + 1
     return dias.coerceAtLeast(1)
 }
 
@@ -196,21 +202,33 @@ fun TripItem(
 
 @Composable
 fun SuggestionButtonWithDays(trip: Trip) {
+    val context = LocalContext.current
+
+    val roteiroDao = AppDatabase.getDatabase(context).roteiroDao()
+    val roteiroRepository = RoteiroRepository(roteiroDao)
+    val roteiroViewModel: RoteiroViewModel = viewModel(factory = RoteiroViewModelFactory(roteiroRepository))
+
     var showDialog by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var suggestion by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    var extraRequest by remember { mutableStateOf("") }  // Novo campo para pedido extra
+
     val days = calcularDiasViagem(trip.startDate, trip.endDate)
 
-    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Button(onClick = {
             isLoading = true
             showDialog = true
             errorMessage = null
             suggestion = ""
+            extraRequest = ""
 
-            val prompt = "Sugira um roteiro de ${days} ${if (days == 1) "dia" else "dias"} para ${trip.destination}, incluindo dicas locais, culinária e pontos turísticos."
+            val prompt = "Sugira um roteiro de ${days} ${if (days == 1) "dia" else "dias"} para ${trip.destination} para uma viagem do tipo ${trip.type}, incluindo dicas locais, culinária e pontos turísticos."
 
             GeminiService.sugerirRoteiro(
                 destino = prompt,
@@ -238,17 +256,86 @@ fun SuggestionButtonWithDays(trip: Trip) {
             },
             title = { Text("Sugestão de Roteiro") },
             text = {
-                Box(
-                    modifier = Modifier
-                        .heightIn(max = 400.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    if (isLoading) {
+                if (isLoading) {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
-                    } else if (errorMessage != null) {
-                        Text("Erro: $errorMessage")
-                    } else {
-                        Text(suggestion)
+                    }
+                } else if (errorMessage != null) {
+                    Text("Erro: $errorMessage")
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 100.dp, max = 400.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                                .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                                .background(Color(0xFFF7F7F7), RoundedCornerShape(8.dp))
+                                .padding(16.dp)
+                        ) {
+                            Text(text = suggestion)
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Novo campo TextField para pedido extra
+                        OutlinedTextField(
+                            value = extraRequest,
+                            onValueChange = { extraRequest = it },
+                            label = { Text("Peça algo mais (ex: hotéis em X)") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Button(onClick = {
+                                roteiroViewModel.salvarRoteiro(
+                                    username = trip.username,
+                                    destino = trip.destination,
+                                    sugestao = suggestion
+                                )
+                                Toast.makeText(context, "Roteiro salvo com sucesso!", Toast.LENGTH_SHORT).show()
+                                showDialog = false
+                            }) {
+                                Text("Salvar")
+                            }
+
+                            Button(onClick = {
+                                if (extraRequest.isBlank()) {
+                                    Toast.makeText(context, "Digite um pedido extra para a sugestão", Toast.LENGTH_SHORT).show()
+                                    return@Button
+                                }
+                                isLoading = true
+                                suggestion = ""
+                                errorMessage = null
+
+                                val prompt = "Sugira um roteiro de ${days} ${if (days == 1) "dia" else "dias"} para ${trip.destination} para uma viagem do tipo ${trip.type}, incluindo dicas locais, culinária e pontos turísticos. Além disso, inclua o seguinte pedido: ${extraRequest}."
+
+                                GeminiService.sugerirRoteiro(
+                                    destino = prompt,
+                                    onResult = {
+                                        suggestion = it
+                                        isLoading = false
+                                    },
+                                    onError = {
+                                        errorMessage = it
+                                        isLoading = false
+                                    }
+                                )
+                            }) {
+                                Text("Gerar nova sugestão")
+                            }
+                        }
                     }
                 }
             }
@@ -256,22 +343,76 @@ fun SuggestionButtonWithDays(trip: Trip) {
     }
 }
 
+
+
 @Composable
 fun BottomNavBar(navController: NavController, username: String) {
-    BottomAppBar(
-        containerColor = MaterialTheme.colorScheme.primary
-    ) {
-        Spacer(Modifier.weight(1f))
+    var showInfoDialog by remember { mutableStateOf(false) }
 
-        FloatingActionButton(
-            onClick = {
-                navController.navigate("add_trip/$username")
-            },
-            containerColor = MaterialTheme.colorScheme.secondary
+    BottomAppBar(
+        containerColor = Color(0xFF4CAF50),
+        contentColor = Color.White
+    ) {
+        // Botão: Ver roteiros (esquerda)
+        IconButton(
+            onClick = { navController.navigate("roteiros/$username") },
+            modifier = Modifier.size(48.dp)
         ) {
-            Icon(Icons.Filled.Add, contentDescription = "Adicionar viagem")
+            Icon(
+                imageVector = Icons.Default.List,
+                contentDescription = "Ver roteiros",
+                modifier = Modifier.size(32.dp),
+                tint = Color.White
+            )
         }
 
-        Spacer(Modifier.weight(1f))
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Botão: Adicionar (centro)
+        IconButton(
+            onClick = { navController.navigate("add_trip/$username") },
+            modifier = Modifier.size(56.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Adicionar",
+                modifier = Modifier.size(36.dp),
+                tint = Color.White
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Botão: Informações (direita)
+        IconButton(
+            onClick = { showInfoDialog = true },
+            modifier = Modifier.size(48.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Informações",
+                modifier = Modifier.size(32.dp),
+                tint = Color.White
+            )
+        }
+    }
+
+    // Diálogo de informações
+    if (showInfoDialog) {
+        AlertDialog(
+            onDismissRequest = { showInfoDialog = false },
+            title = { Text("Informações") },
+            text = {
+                Text("Projeto final da disciplina de Programação para Dispositivos Móveis. Professor Fabiano Oss. Junho de 2025")
+            },
+            confirmButton = {
+                TextButton(onClick = { showInfoDialog = false }) {
+                    Text("Fechar")
+                }
+            }
+        )
     }
 }
+
+
+

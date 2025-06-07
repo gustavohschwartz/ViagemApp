@@ -19,6 +19,7 @@ import com.example.viagemapp.screens.AddTripScreen
 import com.example.viagemapp.screens.LoginScreen
 import com.example.viagemapp.screens.MenuScreen
 import com.example.viagemapp.screens.RegisterScreen
+import com.example.viagemapp.screens.SavedRoteirosScreen
 import com.example.viagemapp.ui.theme.ViagemAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -67,6 +68,7 @@ fun MyApp() {
             val tripDao = AppDatabase.getDatabase(context).tripDao()
             var trip by remember { mutableStateOf<Trip?>(null) }
 
+
             LaunchedEffect(tripId) {
                 trip = tripId?.let { tripDao.getById(it) }
             }
@@ -75,5 +77,13 @@ fun MyApp() {
                 AddTripScreen(navController = navController, username = username, existingTrip = it)
             }
         }
+
+        composable("roteiros/{username}") { backStackEntry ->
+            val username = backStackEntry.arguments?.getString("username") ?: ""
+            SavedRoteirosScreen(username = username) {
+                navController.popBackStack()
+            }
+        }
+
     }
 }
