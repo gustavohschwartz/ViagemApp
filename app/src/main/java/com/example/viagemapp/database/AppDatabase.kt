@@ -5,18 +5,22 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.viagemapp.dao.RegisterUserDao
+import com.example.viagemapp.dao.RoteiroDao
 import com.example.viagemapp.dao.TripDao
 import com.example.viagemapp.entity.RegisterUser
+import com.example.viagemapp.entity.Roteiro
 import com.example.viagemapp.entity.Trip
 
 @Database(
-    entities = [RegisterUser::class, Trip::class],
-    version = 3, // aumente se modificar o banco
+    entities = [RegisterUser::class, Trip::class, Roteiro::class],
+    version = 4, // aumente se modificar o banco
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun registerUserDao(): RegisterUserDao
     abstract fun tripDao(): TripDao
+    abstract fun roteiroDao(): RoteiroDao
+
 
     companion object {
         @Volatile
